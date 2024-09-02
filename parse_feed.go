@@ -113,11 +113,9 @@ func getCloseStops(feed *gtfs.GTFS, wantedLat, wantedLon float64) map[string]gtf
 
 // converts YYYYMMDD to time.Time
 func dayFromFromGtfsString(gtfsDayString string) time.Time {
-	tz, err := time.LoadLocation(LOCATION_TIMEZONE)
-	if err != nil {
-		panic(err)
-	}
-	time, err := time.ParseInLocation("20060102", gtfsDayString, tz)
+	location, _ := time.LoadLocation(LOCATION_TIMEZONE)
+	fmt.Printf("location.String(): %v\n", location.String())
+	time, err := time.ParseInLocation("20060102", gtfsDayString, location)
 	if err != nil {
 		panic(err)
 	}
