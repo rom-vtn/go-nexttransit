@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"sort"
 	"strconv"
 	"time"
@@ -9,16 +11,26 @@ import (
 	gtfs "github.com/artonge/go-gtfs"
 )
 
-const DIR_PATH = "./lemet/"
-const WANTED_LAT = 49.10123225574134
-const WANTED_LON = 6.2228643894195566
-
 const KM_TO_DEGREES = 0.009
-
 const DIST_THRESHOLD_KM = 0.3
 
 func main() {
-	sights, err := GetNextBuses(WANTED_LAT, WANTED_LON, DIR_PATH)
+	if len(os.Args) < 4 {
+		log.Fatalf("Usage: %s <gtfs-directory-path> <lat> <lon>", os.Args[0])
+	}
+	gtfsDirPath := os.Args[1]
+	latString := os.Args[2]
+	lonString := os.Args[3]
+	lat, err := strconv.ParseFloat(latString, 64)
+	if err != nil {
+		panic(err)
+	}
+	lon, err := strconv.ParseFloat(lonString, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	sights, err := GetNextBuses(lat, lon, gtfsDirPath)
 	if err != nil {
 		panic(err)
 	}
