@@ -11,6 +11,7 @@ import (
 
 const KM_TO_DEGREES = 0.009
 const DIST_THRESHOLD_KM = 0.3
+const LOCATION_TIMEZONE = "Europe/Paris"
 
 // func main() {
 // 	if len(os.Args) < 4 {
@@ -112,7 +113,11 @@ func getCloseStops(feed *gtfs.GTFS, wantedLat, wantedLon float64) map[string]gtf
 
 // converts YYYYMMDD to time.Time
 func dayFromFromGtfsString(gtfsDayString string) time.Time {
-	time, err := time.Parse("20060102", gtfsDayString)
+	tz, err := time.LoadLocation(LOCATION)
+	if err != nil {
+		panic(err)
+	}
+	time, err := time.ParseInLocation("20060102", gtfsDayString, tz)
 	if err != nil {
 		panic(err)
 	}
