@@ -1,9 +1,7 @@
-package main
+package gonexttransit
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"sort"
 	"strconv"
 	"time"
@@ -14,31 +12,31 @@ import (
 const KM_TO_DEGREES = 0.009
 const DIST_THRESHOLD_KM = 0.3
 
-func main() {
-	if len(os.Args) < 4 {
-		log.Fatalf("Usage: %s <gtfs-directory-path> <lat> <lon>", os.Args[0])
-	}
-	gtfsDirPath := os.Args[1]
-	latString := os.Args[2]
-	lonString := os.Args[3]
-	lat, err := strconv.ParseFloat(latString, 64)
-	if err != nil {
-		panic(err)
-	}
-	lon, err := strconv.ParseFloat(lonString, 64)
-	if err != nil {
-		panic(err)
-	}
+// func main() {
+// 	if len(os.Args) < 4 {
+// 		log.Fatalf("Usage: %s <gtfs-directory-path> <lat> <lon>", os.Args[0])
+// 	}
+// 	gtfsDirPath := os.Args[1]
+// 	latString := os.Args[2]
+// 	lonString := os.Args[3]
+// 	lat, err := strconv.ParseFloat(latString, 64)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	lon, err := strconv.ParseFloat(lonString, 64)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	sights, err := GetNextBuses(lat, lon, gtfsDirPath)
-	if err != nil {
-		panic(err)
-	}
+// 	sights, err := GetNextBuses(lat, lon, gtfsDirPath)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	for _, sight := range sights {
-		fmt.Printf("Bus: %s -> %s, at %s\n", sight.RouteName, sight.Headsign, sight.Timestamp.Format("15:04"))
-	}
-}
+// 	for _, sight := range sights {
+// 		fmt.Printf("Bus: %s -> %s, at %s\n", sight.RouteName, sight.Headsign, sight.Timestamp.Format("15:04"))
+// 	}
+// }
 
 type Sighting struct {
 	Timestamp time.Time
