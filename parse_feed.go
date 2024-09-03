@@ -168,15 +168,14 @@ func isCalendarActiveOn(calendar gtfs.Calendar, weekday time.Weekday) bool {
 
 func getActiveServicesOn(feed *gtfs.GTFS, moment time.Time) map[string]bool {
 	day := moment.Truncate(24 * time.Hour)
-	dayString := day.Format("20060102")
 	weekday := day.Weekday()
 
 	//get all service exceptions
 	negativeExceptions := make(map[string]bool)
 	var activeServices []string
 	for _, calendarDate := range feed.CalendarDates {
-		fmt.Printf("calendarDate: %v\n", calendarDate)
-		if dayString != calendarDate.Date {
+		exceptionDate := dayFromFromGtfsString(calendarDate.Date)
+		if exceptionDate.Sub(day) != 0 {
 			continue
 		}
 		if calendarDate.ExceptionType == gtfs.ExceptionTypeAdded {
