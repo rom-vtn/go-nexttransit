@@ -1,7 +1,6 @@
 package gonexttransit
 
 import (
-	"fmt"
 	"sort"
 	"strconv"
 	"time"
@@ -183,7 +182,6 @@ func getActiveServicesOn(feed *gtfs.GTFS, moment time.Time) map[string]bool {
 	}
 
 	for _, calendar := range feed.Calendars {
-		fmt.Printf("calendar: %v\n", calendar)
 		startDate := dayFromFromGtfsString(calendar.Start)
 		endDate := dayFromFromGtfsString(calendar.End)
 		if day.Before(startDate) || day.After(endDate) {
@@ -198,7 +196,5 @@ func getActiveServicesOn(feed *gtfs.GTFS, moment time.Time) map[string]bool {
 	for _, serviceId := range activeServices {
 		activeServicesMap[serviceId] = true
 	}
-	fmt.Printf("negativeExceptions: %v\n", negativeExceptions)
-	fmt.Printf("activeServices: %v\n", activeServices)
 	return activeServicesMap
 }
