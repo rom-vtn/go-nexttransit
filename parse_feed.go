@@ -170,8 +170,7 @@ func getActiveServicesOn(feed *gtfs.GTFS, moment time.Time) map[string]bool {
 	negativeExceptions := make(map[string]bool)
 	var activeServices []string
 	for _, calendarDate := range feed.CalendarDates {
-		exceptionDate := dayFromFromGtfsString(calendarDate.Date)
-		if exceptionDate.Sub(day) != 0 {
+		if day.Format("20060102") != calendarDate.Date {
 			continue
 		}
 		if calendarDate.ExceptionType == gtfs.ExceptionTypeAdded {
