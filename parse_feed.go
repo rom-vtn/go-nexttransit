@@ -11,7 +11,6 @@ import (
 
 const KM_TO_DEGREES = 0.009
 const DIST_THRESHOLD_KM = 0.3
-const LOCATION_TIMEZONE = "Europe/Paris"
 
 // func main() {
 // 	if len(os.Args) < 4 {
@@ -45,7 +44,8 @@ type Sighting struct {
 	Headsign  string
 }
 
-func GetNextBuses(lat, lon float64, dirPath string) ([]Sighting, error) {
+// returns the next bus sightings at the given location at the given day. Assumes that GTFS feed time = UTC + timezoneOffset
+func GetNextBuses(lat, lon float64, dirPath string, day time.Time, timezoneOffset time.Duration) ([]Sighting, error) {
 	feed, err := gtfs.Load(dirPath, nil)
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func GetNextBuses(lat, lon float64, dirPath string) ([]Sighting, error) {
 		}
 		//do the actual sight
 		departureOffset := timeDurationFromGtfsString(stopTime.Departure)
-		timestamp := today.Add(departureOffset)
+		timestamp := today.Add(departureOffset).Add(-timezoneOffset)
 		routeName := allRoutesMap[trip.RouteID].ShortName
 		headsign := trip.Headsign
 		sight := Sighting{
@@ -113,10 +113,7 @@ func getCloseStops(feed *gtfs.GTFS, wantedLat, wantedLon float64) map[string]gtf
 
 // converts YYYYMMDD to time.Time
 func dayFromFromGtfsString(gtfsDayString string) time.Time {
-	location, _ := time.LoadLocation(LOCATION_TIMEZONE)
-	fmt.Printf("location.String(): %v\n", location.String())
-	println("AAAA")
-	time, err := time.ParseInLocation("20060102", gtfsDayString, location)
+	time, err := time.Parse("20060102", gtfsDayString)
 	if err != nil {
 		panic(err)
 	}
