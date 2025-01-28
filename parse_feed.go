@@ -11,32 +11,6 @@ import (
 const KM_TO_DEGREES = 0.009
 const DIST_THRESHOLD_KM = 0.3
 
-// func main() {
-// 	if len(os.Args) < 4 {
-// 		log.Fatalf("Usage: %s <gtfs-directory-path> <lat> <lon>", os.Args[0])
-// 	}
-// 	gtfsDirPath := os.Args[1]
-// 	latString := os.Args[2]
-// 	lonString := os.Args[3]
-// 	lat, err := strconv.ParseFloat(latString, 64)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	lon, err := strconv.ParseFloat(lonString, 64)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	sights, err := GetNextBuses(lat, lon, gtfsDirPath)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	for _, sight := range sights {
-// 		fmt.Printf("Bus: %s -> %s, at %s\n", sight.RouteName, sight.Headsign, sight.Timestamp.Format("15:04"))
-// 	}
-// }
-
 type Sighting struct {
 	Timestamp time.Time
 	RouteName string
@@ -61,6 +35,8 @@ func GetNextBuses(lat, lon float64, dirPath string, day time.Time, timezoneOffse
 		allRoutesMap[route.ID] = route
 	}
 
+	tripIdToTripHeadsign := getTripIdToHeadsign(feed)
+
 	today := time.Now().Truncate(24 * time.Hour)
 	activeServicesMap := getActiveServicesOn(feed, today)
 
@@ -81,7 +57,7 @@ func GetNextBuses(lat, lon float64, dirPath string, day time.Time, timezoneOffse
 		departureOffset := timeDurationFromGtfsString(stopTime.Departure)
 		timestamp := today.Add(departureOffset).Add(-timezoneOffset)
 		routeName := allRoutesMap[trip.RouteID].ShortName
-		headsign := trip.Headsign
+		headsign := tripIdToTripHeadsign[trip.ID]
 		sight := Sighting{
 			Timestamp: timestamp,
 			RouteName: routeName,
@@ -95,6 +71,36 @@ func GetNextBuses(lat, lon float64, dirPath string, day time.Time, timezoneOffse
 	})
 
 	return sights, nil
+}
+
+// maps tripID to headsign
+func getTripIdToHeadsign(feed *gtfs.GTFS) map[string]string {
+	tripIdToLastStopId := make(map[string]string, len(feed.Trips))
+	tripIdToMaxSequence := make(map[string]uint32, len(feed.Trips))
+	for _, st := range feed.StopsTimes {
+		maxSeq := tripIdToMaxSequence[st.TripID]
+		if st.StopSeq <= maxSeq {
+			continue
+		}
+		tripIdToLastStopId[st.TripID] = st.StopID
+		tripIdToMaxSequence[st.TripID] = st.StopSeq
+	}
+	stopIdToStopName := make(map[string]string, len(feed.Stops))
+	for _, stop := range feed.Stops {
+		stopIdToStopName[stop.ID] = stop.Name
+	}
+	tripIdToTripHeadsign := make(map[string]string, len(feed.Trips))
+	for tripId, lastStopId := range tripIdToLastStopId {
+		lastStopName := stopIdToStopName[lastStopId]
+		tripIdToTripHeadsign[tripId] = lastStopName
+	}
+	//then replace headsign if actually given
+	for _, trip := range feed.Trips {
+		if trip.Headsign != "" {
+			tripIdToTripHeadsign[trip.ID] = trip.Headsign
+		}
+	}
+	return tripIdToTripHeadsign
 }
 
 func getCloseStops(feed *gtfs.GTFS, wantedLat, wantedLon float64) map[string]gtfs.Stop {
