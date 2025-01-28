@@ -1,6 +1,7 @@
 package gonexttransit
 
 import (
+	"fmt"
 	"sort"
 	"strconv"
 	"time"
@@ -36,6 +37,7 @@ func GetNextBuses(lat, lon float64, dirPath string, day time.Time, timezoneOffse
 	}
 
 	tripIdToTripHeadsign := getTripIdToHeadsign(feed)
+	fmt.Printf("tripIdToTripHeadsign: %v\n", tripIdToTripHeadsign)
 
 	today := time.Now().Truncate(24 * time.Hour)
 	activeServicesMap := getActiveServicesOn(feed, today)
